@@ -1,0 +1,17 @@
+{
+  "name": "puppet_v1",
+  "version": "0.0.2",
+  "description": "Swym Puppet Based on App",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev" : "node index.js"
+  },
+  "author": "ranga",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "puppeteer": "^8.0.0"
+  }
+}
