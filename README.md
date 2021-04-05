@@ -24,5 +24,13 @@ When runing the bot for the first time run npm install on the directory.
 
 That's it - It should validate each store and will generate a file called  *results.csv* file which will contain all the viable store urls.
 
+File name  |  Purpose
+------------ | -------------
+swym_config.js | contains browser / puppet configuration
+index.js | Init file for the bot.
+utils | required files for bot to run.
+shopify_stores.csv | input file.
+results.csv | output file.
+
 
 
