@@ -1,6 +1,6 @@
 let configuration = {
 	launchOptions: {
-		headless: false,
+		headless: true,
 		defaultViewport: null,
 		args: ['--incognito'],
 	},
