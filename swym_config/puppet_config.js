@@ -1,6 +1,6 @@
 let configuration = {
 	launchOptions: {
-		headless: true,
+		headless: false,
 		defaultViewport: null,
 		args: ['--incognito'],
 	},
@@ -13,7 +13,8 @@ let configuration = {
 	startURL: "https://google.com",
 	selectors: "div#pg-store404 ,  .status-error.status-code-500 , .template-password, form#login_form",
 	userEmail : "ranga.prakash@swymcorp.com",
-	timeoutms : 30000
+	timeoutms : 30000,
+	bispaButtonSelector : ""
 }
 
 function getConfig() {

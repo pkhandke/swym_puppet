@@ -35,7 +35,8 @@ async function initSwymPuppet() {
 				console.log(appObj.retailerSettings, "Found it!");
 				let watchListSettings = await swymPuppet.getAppSpecificRetailerSettings(appObj.retailerSettings, "Watchlist")
 				appObj.watchListSettings = watchListSettings;
-				//let UIChecks = await swymPuppet.runUIValidations(page, watchListSettings);
+				let UIChecks = await swymPuppet.runUIValidations(page, watchListSettings);
+				console.log(UIChecks, "UI validation done");
 			}
 			appObj.processed = true;
 		} else {

@@ -209,7 +209,6 @@ const waitTillHTMLRendered = async (page, timeout = 30000) => {
 		await delay(checkDurationMsecs);
 	}
 };
-
 async function getAppSpecificRetailerSettings(retailerSettings, app) {
 	let verified = {};
 	try {
@@ -219,25 +218,43 @@ async function getAppSpecificRetailerSettings(retailerSettings, app) {
 			verified.InlineForm = retailerSettings.InlineForm;
 			verified.ShowIfOneOOS = retailerSettings.ShowIfOneOOS;
 		}
-
-		if(app == "Wishlist"){
+		if (app == "Wishlist") {
 			// todo
 		}
 	} catch (e) {
-		logger.logToConsole({message:"Error, Validating retailer Settings for app", info: app}, "log");
-
+		logger.logToConsole({
+			message: "Error, Validating retailer Settings for app",
+			info: app
+		}, "log");
 	}
 	return verified;
 }
-
-async function runUIValidations(page, watchListSettings ){
-	try{
-		
+async function runUIValidations(page, watchListSettings) {
+	let uiValidationsObj = {};
+	let selector = configuration.bispaButtonSelector;
+	try {
+		uiValidationsObj.isButtonPresent = checkIfSwymButtonInjected(page, selector);
+	} catch (e) {
+		console.log("Error, finding injected selector", e);
+		uiValidationsObj.isButtonPresent = false;
 	}
-	catch(e){
-
+	return uiValidationsObj;
+}
+async function checkIfSwymButtonInjected(page, selector) {
+	let buttonExists = false;
+	try {
+		let swymButton = await page.evaluate(() => {
+			let el = document.querySelector(selector);
+			return el ? el.innerText : ""
+		});
+		swymButton ? buttonExists = true : buttonExists = false;
+	} catch (e) {
+		logger.logToConsole({
+			message: "Error finding the selector",
+			info: e
+		});
 	}
-
+	return buttonExists;
 }
 module.exports = {
 	delay,
