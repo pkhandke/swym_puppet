@@ -291,15 +291,24 @@ async function getAppSpecificRetailerSettings(retailerSettings, app) {
 */
 async function runUIValidations(page, watchListSettings) {
   let isValidUI = false;
+  let bispaFormSelector = configuration.bispaFormSelector
   try {
     if (watchListSettings.InlineForm) {
-      let isFormVisible = await checkifFormVisible(
+      let isFormVisible = await checkfiElementVisible(
         page,
-        configuration.bispaFormSelector
+        bispaFormSelector
       );
-	  if(isFormVisible){
-		let isFormVisible = await fillBispaForm(page, "form");
-	  }
+      if (isFormVisible) {
+        isValidUI = await fillBispaForm(page, "form");
+      } else {
+        logToConsole(
+          {
+            message: "Form wasn't visible",
+            info: isFormVisible + +" :" + isValidUI,
+          },
+          "log"
+        );
+      }
     } else {
       // check for button if yes click the button and fill the form
       let buttonElement = await page.waitForSelector(
@@ -328,12 +337,12 @@ async function fillBispaForm(page, type) {
   let buttonSelector = configuration.bispaButtonSelector;
   let userEmail = configuration.userEmail;
   let submitBtn = configuration.bispaFormSubmitButtonSelector;
-
+  let successSelector = configuration.bispaSuccessSelector;
   try {
     if (type == "button") {
       (await checkfiElementVisible(page, buttonSelector))
         ? await page.click(buttonSelector)
-        : isSuccess = false;
+        : (isSuccess = false);
       await delay(1500);
     }
     let formElement = await checkfiElementVisible(page, formSelector);
@@ -341,7 +350,7 @@ async function fillBispaForm(page, type) {
       await page.type(inputSelector, userEmail);
       await delay(3000);
       await page.click(submitBtn);
-      isSuccess = await checkSubscriptionStatus(page);
+      isSuccess = await checkfiElementVisible(page, successSelector);
     } else {
       logToConsole(
         { message: "Form never showed up ", info: formElement },
@@ -359,22 +368,6 @@ async function fillBispaForm(page, type) {
     );
   }
   return isSuccess;
-}
-
-async function checkSubscriptionStatus(page) {
-  let callbackStatus = false;
-  try {
-    let element = await page.waitForSelector(
-      configuration.bispaSuccessSelector
-    );
-    element ? (callbackStatus = true) : (callbackStatus = false);
-  } catch (e) {
-    logger.logToConsole(
-      { message: "No Success callback from subscription", info: e },
-      "log"
-    );
-  }
-  return callbackStatus;
 }
 
 async function checkfiElementVisible(page, selector) {

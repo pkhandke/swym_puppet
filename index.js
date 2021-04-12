@@ -49,7 +49,7 @@ async function initSwymPuppet() {
           page,
           watchListSettings
         );
-        console.log("Is BISPA FORM Visible ", UIChecks);
+        appObj.validated_ui = UIChecks;
       }
       appObj.processed = true;
     } else {
@@ -104,6 +104,10 @@ async function writeProcessLogsToOutputFile(statusRecords) {
       id: "validSwymPageData",
       title: "Is Valid SwymPageData",
     },
+    {
+      id: "validated_ui",
+      title: "Validated SwymForm",
+    },
   ];
 
   statusRecords.forEach(function (r) {
@@ -117,6 +121,7 @@ async function writeProcessLogsToOutputFile(statusRecords) {
     tempObj.isSwymInstalled = r.swymValidations.swatPresent;
     tempObj.isInventoryManagementValid =
       r.swymValidations.isInventoryManagementValid;
+    tempObj.validated_ui = r.validated_ui;
     console.log(tempObj);
     filteredRecords.push(tempObj);
   });
