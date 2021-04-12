@@ -3,7 +3,7 @@ const csv_parser = require("csv-parser");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const logger = require("./logger.js");
 
-function writeRecords(path, records, header) {
+function writeRecords(path,header, records) {
 	const csvWriter = createCsvWriter({
 		path: path || "./result.csv",
 		header: header

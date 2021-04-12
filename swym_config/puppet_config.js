@@ -6,8 +6,46 @@ let configuration = {
   },
   fileConfig: {
     inputFilePath: "", // takes default swym_stores.csv
-    outputFilePath: "",
+    outputFilePath: "./result.csv",
     logOutputFilePath: "../logs/log.csv",
+	outputFileHeaders : [
+		{
+		  id: "store_url",
+		  title: "Store URL",
+		},
+		{
+		  id: "status",
+		  title: "Store Status",
+		},
+		{
+		  id: "comments",
+		  title: "Comments",
+		},
+		{
+		  id: "processed",
+		  title: "Processed Store",
+		},
+		{
+		  id: "isSwymInstalled",
+		  title: "Swym Installed",
+		},
+		{
+		  id: "OOS_URL",
+		  title: "Out of Stock URL",
+		},
+		{
+		  id: "isInventoryManagementValid",
+		  title: "Shopify Inventory",
+		},
+		{
+		  id: "validSwymPageData",
+		  title: "Is Valid SwymPageData",
+		},
+		{
+		  id: "validated_ui",
+		  title: "Validated Swym UI / Form",
+		},
+	  ]
   },
   delay: 500,
   startURL: "https://google.com",

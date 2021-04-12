@@ -70,46 +70,7 @@ async function initSwymPuppet() {
 }
 
 async function writeProcessLogsToOutputFile(statusRecords) {
-  let filteredRecords = [];
-  let headers = [
-    {
-      id: "store_url",
-      title: "Store URL",
-    },
-    {
-      id: "status",
-      title: "Store Status",
-    },
-    {
-      id: "comments",
-      title: "Comments",
-    },
-    {
-      id: "processed",
-      title: "Processed Store",
-    },
-    {
-      id: "isSwymInstalled",
-      title: "Swym Installed",
-    },
-    {
-      id: "OOS_URL",
-      title: "Out of Stock URL",
-    },
-    {
-      id: "isInventoryManagementValid",
-      title: "Shopify Inventory",
-    },
-    {
-      id: "validSwymPageData",
-      title: "Is Valid SwymPageData",
-    },
-    {
-      id: "validated_ui",
-      title: "Validated SwymForm",
-    },
-  ];
-
+  let finalOutputRecords = [];
   statusRecords.forEach(function (r) {
     let tempObj = {};
     tempObj.store_url = r.store_url;
@@ -123,9 +84,14 @@ async function writeProcessLogsToOutputFile(statusRecords) {
       r.swymValidations.isInventoryManagementValid;
     tempObj.validated_ui = r.validated_ui;
     console.log(tempObj);
-    filteredRecords.push(tempObj);
+    finalOutputRecords.push(tempObj);
   });
-  fileOperations.writeRecords("./results.csv", filteredRecords, headers);
+
+   fileOperations.writeRecords(
+    configuration.fileConfig.outputFilePath,
+    configuration.fileConfig.outputFileHeaders,
+	finalOutputRecords,
+  );
 }
 
 initSwymPuppet();
