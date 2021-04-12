@@ -291,13 +291,10 @@ async function getAppSpecificRetailerSettings(retailerSettings, app) {
 */
 async function runUIValidations(page, watchListSettings) {
   let isValidUI = false;
-  let bispaFormSelector = configuration.bispaFormSelector
+  let bispaFormSelector = configuration.bispaFormSelector;
   try {
     if (watchListSettings.InlineForm) {
-      let isFormVisible = await checkfiElementVisible(
-        page,
-        bispaFormSelector
-      );
+      let isFormVisible = await checkfiElementVisible(page, bispaFormSelector);
       if (isFormVisible) {
         isValidUI = await fillBispaForm(page, "form");
       } else {

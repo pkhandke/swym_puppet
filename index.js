@@ -87,10 +87,10 @@ async function writeProcessLogsToOutputFile(statusRecords) {
     finalOutputRecords.push(tempObj);
   });
 
-   fileOperations.writeRecords(
+  fileOperations.writeRecords(
     configuration.fileConfig.outputFilePath,
     configuration.fileConfig.outputFileHeaders,
-	finalOutputRecords,
+    finalOutputRecords
   );
 }
 
