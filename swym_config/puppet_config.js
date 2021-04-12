@@ -14,7 +14,8 @@ let configuration = {
 	selectors: "div#pg-store404 ,  .status-error.status-code-500 , .template-password, form#login_form",
 	userEmail : "ranga.prakash@swymcorp.com",
 	timeoutms : 30000,
-	bispaButtonSelector : ""
+	bispaButtonSelector : ".swym-button.swym-add-to-watchlist.swym-inject",
+	bispaFormSelector : ".swym-remind-me.swym-product-view.swym-product-view-swiper"
 }
 
 function getConfig() {

@@ -1,11 +1,22 @@
 const logger = require("./logger.js");
 const configuration = require("../swym_config/puppet_config.js").getConfig();
 const browserContext = require("./browser.js");
+
 async function delay(time) {
 	return new Promise(function(resolve, reject) {
 		setTimeout(resolve, time);
 	})
 }
+
+async function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+}
+
 // End of Helper Functions
 // Start Swym Specific Functions 
 async function getOOSURL(url, app) {
@@ -153,7 +164,6 @@ async function getRetailerSettings(page, app) {
 	try {
 		appSettings = await getSwymRetailerSettingsInternal(page, app);
 	} catch (e) {
-		appSettings = {};
 		logger.logToConsole({
 			message: "Error, trying to get retailerSettings",
 			error: e
@@ -229,32 +239,32 @@ async function getAppSpecificRetailerSettings(retailerSettings, app) {
 	}
 	return verified;
 }
+/*Todo 
+1. Check the retailerSettings for form setup (Button / form)
+2. Check if the form or button is visible
+3. if the flow is a button - Click the button and click the form
+4. if the flow is a form - click on the input from and subscribe to pop-up, wait and check if the 
+*/
 async function runUIValidations(page, watchListSettings) {
-	let uiValidationsObj = {};
-	let selector = configuration.bispaButtonSelector;
+	let isValidUI = false;
 	try {
-		uiValidationsObj.isButtonPresent = checkIfSwymButtonInjected(page, selector);
+		if (watchListSettings.InlineForm) {
+			let isFormValidAndVisible =  await page.waitForSelector(configuration.bispaFormSelector, {
+				visible: true,
+			  });
+			  console.log("Form is Visible", isFormValidAndVisible);
+		}
 	} catch (e) {
-		console.log("Error, finding injected selector", e);
-		uiValidationsObj.isButtonPresent = false;
+		logger.logToConsole({message: "Error validating UI items", info:e}, "log");
 	}
-	return uiValidationsObj;
 }
-async function checkIfSwymButtonInjected(page, selector) {
-	let buttonExists = false;
+async function fillBispaForm(page) {
+	let isFilled = false;
 	try {
-		let swymButton = await page.evaluate(() => {
-			let el = document.querySelector(selector);
-			return el ? el.innerText : ""
-		});
-		swymButton ? buttonExists = true : buttonExists = false;
-	} catch (e) {
-		logger.logToConsole({
-			message: "Error finding the selector",
-			info: e
-		});
-	}
-	return buttonExists;
+		await page.type('#username', 'username');
+		await page.type('#password', 'password');
+		await page.click('#submit');
+	} catch (e) {}
 }
 module.exports = {
 	delay,
@@ -265,4 +275,5 @@ module.exports = {
 	getRetailerSettings,
 	getAppSpecificRetailerSettings,
 	runUIValidations,
+	isEmpty
 }

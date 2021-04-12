@@ -31,12 +31,11 @@ async function initSwymPuppet() {
 		if (store.status) {
 			appObj.swymValidations = await swymPuppet.checkSwymVariables(url, page);
 			appObj.retailerSettings = await swymPuppet.getRetailerSettings(page, "Watchlist");
-			if(appObj.retailerSettings){
-				console.log(appObj.retailerSettings, "Found it!");
+            let isEmptyRetailerSettingsObject = await swymPuppet.isEmpty(appObj.retailerSettings);
+			if(!isEmptyRetailerSettingsObject){
 				let watchListSettings = await swymPuppet.getAppSpecificRetailerSettings(appObj.retailerSettings, "Watchlist")
 				appObj.watchListSettings = watchListSettings;
-				let UIChecks = await swymPuppet.runUIValidations(page, watchListSettings);
-				console.log(UIChecks, "UI validation done");
+				//let UIChecks = await swymPuppet.runUIValidations(page, watchListSettings);
 			}
 			appObj.processed = true;
 		} else {
@@ -54,7 +53,6 @@ async function initSwymPuppet() {
 	//console.log(statusRecords);
 	await browser.close();
 	await writeProcessLogsToOutputFile(statusRecords);
-
 }
 
 async function writeProcessLogsToOutputFile(statusRecords) {
