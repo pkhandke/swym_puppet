@@ -293,13 +293,13 @@ async function runUIValidations(page, watchListSettings) {
   let isValidUI = false;
   try {
     if (watchListSettings.InlineForm) {
-      let formElement = await page.waitForSelector(
-        configuration.bispaFormSelector,
-        {
-          visible: true,
-        }
+      let isFormVisible = await checkifFormVisible(
+        page,
+        configuration.bispaFormSelector
       );
-      isValidUI = formElement ? await fillBispaForm(page, "form") : false;
+	  if(isFormVisible){
+		let isFormVisible = await fillBispaForm(page, "form");
+	  }
     } else {
       // check for button if yes click the button and fill the form
       let buttonElement = await page.waitForSelector(
@@ -323,15 +323,32 @@ async function runUIValidations(page, watchListSettings) {
 }
 async function fillBispaForm(page, type) {
   let isSuccess = false;
+  let inputSelector = configuration.bispaInputSelector;
+  let formSelector = configuration.bispaFormSelector;
+  let buttonSelector = configuration.bispaButtonSelector;
+  let userEmail = configuration.userEmail;
+  let submitBtn = configuration.bispaFormSubmitButtonSelector;
+
   try {
     if (type == "button") {
-      await page.click(configuration.bispaButtonSelector);
+      (await checkfiElementVisible(page, buttonSelector))
+        ? await page.click(buttonSelector)
+        : isSuccess = false;
       await delay(1500);
     }
-    await page.type(configuration.bispaInputSelector, configuration.userEmail);
-    await delay(3000);
-    await page.click(configuration.bispaFormSubmitButtonSelector);
-    isSuccess = await checkSubscriptionStatus(page);
+    let formElement = await checkfiElementVisible(page, formSelector);
+    if (formElement) {
+      await page.type(inputSelector, userEmail);
+      await delay(3000);
+      await page.click(submitBtn);
+      isSuccess = await checkSubscriptionStatus(page);
+    } else {
+      logToConsole(
+        { message: "Form never showed up ", info: formElement },
+        "log"
+      );
+      isSuccess = false;
+    }
   } catch (e) {
     logger.logToConsole(
       {
@@ -358,6 +375,22 @@ async function checkSubscriptionStatus(page) {
     );
   }
   return callbackStatus;
+}
+
+async function checkfiElementVisible(page, selector) {
+  let isVisible = false;
+  try {
+    let element = await page.waitForSelector(selector, {
+      visible: true,
+    });
+    element ? (isVisible = true) : (isVisible = false);
+  } catch (e) {
+    logger.logToConsole(
+      { message: "element was not visible", info: selector },
+      "log"
+    );
+  }
+  return isVisible;
 }
 
 module.exports = {
