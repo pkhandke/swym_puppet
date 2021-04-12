@@ -1,26 +1,30 @@
 let configuration = {
-	launchOptions: {
-		headless: false,
-		defaultViewport: null,
-		args: ['--incognito'],
-	},
-	fileConfig: {
-		inputFilePath: "", // takes default swym_stores.csv
-		outputFilePath: "",
-		logOutputFilePath: "../logs/log.csv"
-	},
-	delay: 500,
-	startURL: "https://google.com",
-	selectors: "div#pg-store404 ,  .status-error.status-code-500 , .template-password, form#login_form",
-	userEmail : "ranga.prakash@swymcorp.com",
-	timeoutms : 30000,
-	bispaButtonSelector : ".swym-button.swym-add-to-watchlist.swym-inject",
-	bispaFormSelector : ".swym-remind-me.swym-product-view.swym-product-view-swiper"
-}
+  launchOptions: {
+    headless: false,
+    defaultViewport: null,
+    args: ["--incognito"],
+  },
+  fileConfig: {
+    inputFilePath: "", // takes default swym_stores.csv
+    outputFilePath: "",
+    logOutputFilePath: "../logs/log.csv",
+  },
+  delay: 500,
+  startURL: "https://google.com",
+  selectors:
+    "div#pg-store404 ,  .status-error.status-code-500 , .template-password, form#login_form",
+  userEmail: "ranga.prakash@swymcorp.com",
+  timeoutms: 30000,
+  bispaFormSelector:".swym-remind-me.swym-product-view.swym-product-view-swiper",
+  bispaFormSubmitButtonSelector: "button#swym-remind-email-auth-button",
+  bispaInputSelector: "input#swym-remind-email-auth-input",
+  bispaSuccessSelector: "#swym-remind-email-auth-message .swym-success",
+  bispaButtonSelector : "button.swym-button.swym-add-to-watchlist.swym-inject",
+};
 
 function getConfig() {
-	return configuration;
+  return configuration;
 }
 module.exports = {
-	getConfig,
-}
+  getConfig,
+};
