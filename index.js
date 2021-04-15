@@ -19,7 +19,7 @@ async function initSwymPuppet() {
   logger.logToConsole({ message: "Puppet App started.. >" }, "log");
 
   const browserObject = await browserContext.getRunningBrowserInstance();
-  const { page, browser } = browserObject;
+  let { page, browser } = browserObject;
   await asyncForEach(urls, async function (url, index) {
     let appObj = {};
     appObj.store_url = url;
@@ -64,7 +64,7 @@ async function initSwymPuppet() {
     }
     statusRecords.push(appObj);
   });
-  //console.log(statusRecords);
+  console.log(statusRecords);
   await browser.close();
   await writeProcessLogsToOutputFile(statusRecords);
 }

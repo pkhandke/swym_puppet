@@ -43,6 +43,7 @@ async function getRunningBrowserInstance(page_url) {
 // Navigate the page to the provided url.
 async function navigateTo(url, page) {
 	let navigated = false;
+	console.log(url);
 	try {
 		await page.goto(url, {
 			waitUntil: 'networkidle0',
@@ -56,7 +57,7 @@ async function navigateTo(url, page) {
 	} catch (e) {
 		logger.logToConsole({
 			message: "Error: Wasn't able to Navigate to URL",
-			error: url,
+			error: e,
 		}, "error");
 	}
 	return navigated;
