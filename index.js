@@ -10,10 +10,11 @@ async function asyncForEach(array, callback) {
     await callback(array[index], index, array);
   }
 }
-
 /* End of Helper Function */
 async function initSwymPuppet() {
-  const urls = await fileOperations.getInputStoreUrlsFromCSV(configuration.fileConfig.inputFilePath);
+  const urls = await fileOperations.getInputStoreUrlsFromCSV(
+    configuration.fileConfig.inputFilePath
+  );
   logger.logToConsole({ message: "Puppet App started.. >" }, "log");
 
   const browserObject = await browserContext.getRunningBrowserInstance();

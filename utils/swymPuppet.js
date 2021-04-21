@@ -332,7 +332,8 @@ async function validateBISPAUI(page, type) {
   let inputSelector = configuration.watchlistUISettings.bispaInputSelector;
   let formSelector = configuration.watchlistUISettings.bispaFormSelector;
   let buttonSelector = configuration.watchlistUISettings.bispaButtonSelector;
-  let submitBtn = configuration.watchlistUISettings.bispaFormSubmitButtonSelector;
+  let submitBtn =
+    configuration.watchlistUISettings.bispaFormSubmitButtonSelector;
   let successSelector = configuration.watchlistUISettings.bispaResponseSelector;
   try {
     if (type == "button") {
@@ -343,15 +344,14 @@ async function validateBISPAUI(page, type) {
     }
     let formElement = await waitElementVisble(page, formSelector);
     if (formElement) {
-      if(configuration.watchlistUISettings.testSubscribe){
+      if (configuration.watchlistUISettings.testSubscribe) {
         await page.type(inputSelector, userEmail);
         await delay(2000);
         await page.click(submitBtn);
         validBISPAUI = await waitElementVisble(page, successSelector);
-      } else{
+      } else {
         validBISPAUI = formElement ? true : false;
       }
-
     } else {
       logger.logToConsole(
         { message: "Form never showed up ", info: formElement },
@@ -371,13 +371,12 @@ async function validateBISPAUI(page, type) {
   return validBISPAUI;
 }
 
-
 async function waitElementVisble(page, selector) {
   let isVisible = false;
   try {
     let element = await page.waitForSelector(selector, {
       visible: true,
-      timeout : 90000,
+      timeout: 90000,
     });
     element ? (isVisible = true) : (isVisible = false);
   } catch (e) {
