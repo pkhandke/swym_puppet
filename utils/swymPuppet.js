@@ -19,12 +19,16 @@ async function getOOSURL(url, app) {
   // TODO based on app name change the url and navigate before we go back.
   return url + "/apps/swymWatchlist/proxy/product.php?oos=true";
 }
-async function validateShopifyStore(page, selectors) {
+async function validateShopifyStore(page, invalidStoreSelector) {
   let elements = {};
   try {
-    const elementText = await page.$eval(selectors, (elem) => {
+    const elementText = await page.$eval(invalidStoreSelector, (elem) => {
       return elem.innerText;
     });
+    elements = {
+      comments: elementText,
+      status: false,
+    };
     logger.logToConsole(
       {
         message: "Store Closed / Paused / Behind a Password!",
@@ -32,10 +36,6 @@ async function validateShopifyStore(page, selectors) {
       },
       "log"
     );
-    elements = {
-      comments: elementText,
-      status: false,
-    };
   } catch (e) {
     logger.logToConsole(
       {
@@ -119,7 +119,6 @@ async function validateSwymInventory(page) {
     let variantKeys = Object.keys(swymWatchProducts);
     variantKeys.forEach((k) => {
       let prd = swymWatchProducts[k];
-      console.log(prd);
       if (prd.inventory_management == "shopify") {
         result.push(prd);
       }
@@ -229,7 +228,7 @@ async function getSwymRetailerSettingsInternal(page, app) {
 }
 // https://stackoverflow.com/questions/52497252/puppeteer-wait-until-page-is-completely-loaded
 const waitTillHTMLRendered = async (page, timeout = 30000) => {
-  const checkDurationMsecs = 2000;
+  const checkDurationMsecs = 1000;
   const maxChecks = timeout / checkDurationMsecs;
   let lastHTMLSize = 0;
   let checkCounts = 1;
@@ -291,14 +290,14 @@ async function getAppSpecificRetailerSettings(retailerSettings, app) {
 */
 async function runUIValidations(page, watchListSettings) {
   let isValidUI = false;
-  let bispaFormSelector = configuration.bispaFormSelector;
+  let bispaFormSelector = configuration.watchlistUISettings.bispaFormSelector;
   try {
     if (watchListSettings.InlineForm) {
-      let isFormVisible = await checkfiElementVisible(page, bispaFormSelector);
+      let isFormVisible = await waitElementVisble(page, bispaFormSelector);
       if (isFormVisible) {
-        isValidUI = await fillBispaForm(page, "form");
+        isValidUI = await validateBISPAUI(page, "form");
       } else {
-        logToConsole(
+        logger.logToConsole(
           {
             message: "Form wasn't visible",
             info: isFormVisible + +" :" + isValidUI,
@@ -309,12 +308,12 @@ async function runUIValidations(page, watchListSettings) {
     } else {
       // check for button if yes click the button and fill the form
       let buttonElement = await page.waitForSelector(
-        configuration.bispaButtonSelector,
+        configuration.watchlistUISettings.bispaButtonSelector,
         {
           visible: true,
         }
       );
-      isValidUI = buttonElement ? await fillBispaForm(page, "button") : false;
+      isValidUI = buttonElement ? await validateBISPAUI(page, "button") : false;
     }
   } catch (e) {
     logger.logToConsole(
@@ -327,33 +326,38 @@ async function runUIValidations(page, watchListSettings) {
   }
   return isValidUI;
 }
-async function fillBispaForm(page, type) {
-  let isSuccess = false;
-  let inputSelector = configuration.bispaInputSelector;
-  let formSelector = configuration.bispaFormSelector;
-  let buttonSelector = configuration.bispaButtonSelector;
-  let userEmail = configuration.userEmail;
-  let submitBtn = configuration.bispaFormSubmitButtonSelector;
-  let successSelector = configuration.bispaSuccessSelector;
+async function validateBISPAUI(page, type) {
+  let validBISPAUI = false;
+  let userEmail = configuration.watchlistUISettings.userEmail;
+  let inputSelector = configuration.watchlistUISettings.bispaInputSelector;
+  let formSelector = configuration.watchlistUISettings.bispaFormSelector;
+  let buttonSelector = configuration.watchlistUISettings.bispaButtonSelector;
+  let submitBtn = configuration.watchlistUISettings.bispaFormSubmitButtonSelector;
+  let successSelector = configuration.watchlistUISettings.bispaResponseSelector;
   try {
     if (type == "button") {
-      (await checkfiElementVisible(page, buttonSelector))
+      (await waitElementVisble(page, buttonSelector))
         ? await page.click(buttonSelector)
-        : (isSuccess = false);
+        : (validBISPAUI = false);
       await delay(1500);
     }
-    let formElement = await checkfiElementVisible(page, formSelector);
+    let formElement = await waitElementVisble(page, formSelector);
     if (formElement) {
-      await page.type(inputSelector, userEmail);
-      await delay(3000);
-      await page.click(submitBtn);
-      isSuccess = await checkfiElementVisible(page, successSelector);
+      if(configuration.watchlistUISettings.testSubscribe){
+        await page.type(inputSelector, userEmail);
+        await delay(2000);
+        await page.click(submitBtn);
+        validBISPAUI = await waitElementVisble(page, successSelector);
+      } else{
+        validBISPAUI = formElement ? true : false;
+      }
+
     } else {
-      logToConsole(
+      logger.logToConsole(
         { message: "Form never showed up ", info: formElement },
         "log"
       );
-      isSuccess = false;
+      validBISPAUI = false;
     }
   } catch (e) {
     logger.logToConsole(
@@ -364,14 +368,16 @@ async function fillBispaForm(page, type) {
       "error"
     );
   }
-  return isSuccess;
+  return validBISPAUI;
 }
 
-async function checkfiElementVisible(page, selector) {
+
+async function waitElementVisble(page, selector) {
   let isVisible = false;
   try {
     let element = await page.waitForSelector(selector, {
       visible: true,
+      timeout : 90000,
     });
     element ? (isVisible = true) : (isVisible = false);
   } catch (e) {

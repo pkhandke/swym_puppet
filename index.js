@@ -13,9 +13,7 @@ async function asyncForEach(array, callback) {
 
 /* End of Helper Function */
 async function initSwymPuppet() {
-  const urls = await fileOperations.getInputStoreUrlsFromCSV(
-    "./shopify_stores.csv"
-  );
+  const urls = await fileOperations.getInputStoreUrlsFromCSV(configuration.fileConfig.inputFilePath);
   logger.logToConsole({ message: "Puppet App started.. >" }, "log");
 
   const browserObject = await browserContext.getRunningBrowserInstance();
@@ -26,7 +24,7 @@ async function initSwymPuppet() {
     await browserContext.navigateTo(url, page);
     let store = await swymPuppet.validateShopifyStore(
       page,
-      configuration.selectors
+      configuration.invalidStoreSelector
     );
     appObj.status = store.status;
     appObj.comments = store.comments;
@@ -65,6 +63,7 @@ async function initSwymPuppet() {
     statusRecords.push(appObj);
   });
   console.log(statusRecords);
+  await swymPuppet.delay(2000);
   await browser.close();
   await writeProcessLogsToOutputFile(statusRecords);
 }

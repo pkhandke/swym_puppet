@@ -1,13 +1,13 @@
 let configuration = {
   launchOptions: {
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: ["--incognito"],
   },
   fileConfig: {
-    inputFilePath: "", // takes default swym_stores.csv
+    inputFilePath: "./shopify_stores.csv",
     outputFilePath: "./result.csv",
-    logOutputFilePath: "../logs/log.csv",
+    logOutputFilePath: "../",
     outputFileHeaders: [
       {
         id: "store_url",
@@ -49,16 +49,19 @@ let configuration = {
   },
   delay: 500,
   startURL: "https://google.com",
-  selectors:
+  invalidStoreSelector:
     "div#pg-store404 ,  .status-error.status-code-500 , .template-password, form#login_form",
-  userEmail: "ranga.prakash@swymcorp.com",
   timeoutms: 30000,
-  bispaFormSelector:
-    ".swym-remind-me.swym-product-view.swym-product-view-swiper",
-  bispaFormSubmitButtonSelector: "button#swym-remind-email-auth-button",
-  bispaInputSelector: "input#swym-remind-email-auth-input",
-  bispaSuccessSelector: "#swym-remind-email-auth-message .swym-success",
-  bispaButtonSelector: "button.swym-button.swym-add-to-watchlist.swym-inject",
+  watchlistUISettings: {
+    testSubscribe: false,
+    userEmail: "example@gmail.com",
+    bispaFormSelector:
+      ".swym-remind-me.swym-product-view.swym-product-view-swiper",
+    bispaFormSubmitButtonSelector: "button#swym-remind-email-auth-button",
+    bispaInputSelector: "input#swym-remind-email-auth-input",
+    bispaResponseSelector: "#swym-remind-email-auth-message span",
+    bispaButtonSelector: "button.swym-button.swym-add-to-watchlist.swym-inject",
+  },
 };
 
 function getConfig() {
