@@ -30,11 +30,13 @@ async function initSwymPuppet() {
     appObj.status = store.status;
     appObj.comments = store.comments;
     if (store.status) {
+      appObj.pid = await swymPuppet.getPID(page);
       appObj.swymValidations = await swymPuppet.checkSwymVariables(url, page);
       appObj.retailerSettings = await swymPuppet.getRetailerSettings(
         page,
         "Watchlist"
       );
+
       let isEmptyRetailerSettingsObject = await swymPuppet.isEmpty(
         appObj.retailerSettings
       );
@@ -83,10 +85,27 @@ async function writeProcessLogsToOutputFile(statusRecords) {
     tempObj.isInventoryManagementValid =
       r.swymValidations.isInventoryManagementValid;
     tempObj.validated_ui = r.validated_ui;
-    console.log(tempObj);
+    tempObj.pid = r.pid;
+    tempObj.migratable = checkIfMigratable(tempObj);
     finalOutputRecords.push(tempObj);
   });
 
+
+function checkIfMigratable(tempObj){
+  let isMigrateable = false;
+  try{
+    isMigrateable =  (tempObj.status && 
+      tempObj.OOS_URL && 
+      tempObj.isSwymInstalled && 
+      tempObj.validSwymPageData && 
+      tempObj.validated_ui);
+      console.log( "Store - is migratable", isMigrateable);
+      return isMigrateable;
+  }catch(e){
+    logger.logToConsole({message:"Error writing output of migratable ", info:e}, "log");
+    return isMigrateable;
+  }
+}
   fileOperations.writeRecords(
     configuration.fileConfig.outputFilePath,
     configuration.fileConfig.outputFileHeaders,

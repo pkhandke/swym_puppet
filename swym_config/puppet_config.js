@@ -14,6 +14,10 @@ let configuration = {
         title: "Store URL",
       },
       {
+        id:"pid",
+        title:"pid"
+      },
+      {
         id: "status",
         title: "Store Status",
       },
@@ -43,8 +47,12 @@ let configuration = {
       },
       {
         id: "validated_ui",
-        title: "Validated Swym UI / Form",
+        title: "Valid BISPA UI",
       },
+      {
+        id: "migratable",
+        title:"Is Migratable"
+      }
     ],
   },
   delay: 500,

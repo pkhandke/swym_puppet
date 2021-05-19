@@ -357,7 +357,6 @@ async function validateBISPAUI(page, type) {
         { message: "Form never showed up ", info: formElement },
         "log"
       );
-      validBISPAUI = false;
     }
   } catch (e) {
     logger.logToConsole(
@@ -388,6 +387,27 @@ async function waitElementVisble(page, selector) {
   return isVisible;
 }
 
+async function getPID(page){
+  let pid = "";
+  try {
+    pid = await page.evaluate(() => {
+      if (typeof window._swat.pid != "undefined") {
+        return window._swat.pid;
+      }
+    });
+  } catch (e) {
+    logger.logToConsole(
+      {
+        message: "PID is Undefined! / Probably insallation issue",
+        info: e,
+      },
+      "log"
+    );
+    pid = "Error, getting pid";
+  }
+  return pid;
+}
+
 module.exports = {
   delay,
   getOOSURL,
@@ -398,4 +418,5 @@ module.exports = {
   getAppSpecificRetailerSettings,
   runUIValidations,
   isEmpty,
+  getPID
 };
