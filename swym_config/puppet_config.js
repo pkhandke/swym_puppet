@@ -18,6 +18,10 @@ let configuration = {
         title:"pid"
       },
       {
+        id:"installedApps",
+        title:"Installed Apps"
+      },
+      {
         id: "status",
         title: "Store Status",
       },
@@ -47,7 +51,7 @@ let configuration = {
       },
       {
         id: "validated_ui",
-        title: "Valid BISPA UI",
+        title: "Valid UI",
       },
       {
         id: "migratable",
@@ -70,6 +74,9 @@ let configuration = {
     bispaResponseSelector: "#swym-remind-email-auth-message span",
     bispaButtonSelector: "button.swym-button.swym-add-to-watchlist.swym-inject",
   },
+  wishlistUISettings : {
+    
+  }
 };
 
 function getConfig() {

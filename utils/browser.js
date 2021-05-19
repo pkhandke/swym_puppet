@@ -52,7 +52,6 @@ async function getRunningBrowserInstance(page_url) {
 // Navigate the page to the provided url.
 async function navigateTo(url, page) {
   let navigated = false;
-  console.log(url);
   try {
     await page.goto(url, {
       waitUntil: "networkidle0",
