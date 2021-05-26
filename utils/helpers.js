@@ -32,5 +32,4 @@ module.exports = {
     isEmpty,
     getOOSURL,
     asyncForEach,
-    invalidCandidate: invalidateStoreForMigrationProcess
 }
