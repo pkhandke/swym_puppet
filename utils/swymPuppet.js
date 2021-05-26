@@ -1,29 +1,77 @@
 const logger = require("./logger.js");
 const browserContext = require("./browser.js");
 const uiValidator = require('./ui.js');
-async function delay(time) {
-	return new Promise(function(resolve, reject) {
-		setTimeout(resolve, time);
-	});
-}
-async function isEmpty(obj) {
-	for (var prop in obj) {
-		if (obj.hasOwnProperty(prop)) return false;
+const helper = require("./helpers.js");
+// Start of Helper Functions
+async function checkIfSwymInstalled(page) {
+	let _swatPresent = false;
+	try {
+		_swatPresent = await page.evaluate(() => {
+			return typeof window._swat == "undefined" ? false : true;
+		});
+		logger.logToConsole({
+			message: "Is Swym Installed ? ",
+			info: _swatPresent,
+		}, "log");
+	} catch (e) {
+		logger.logToConsole({
+			message: "Error, while checking if swym was installed!",
+			error: e,
+		}, "error");
 	}
-	return true;
+	return _swatPresent;
 }
+async function getSwymRetailerSettingsInternal(page, appName) {
+	let retailerSettings = {};
+	await helper.delay(1000);
+	try {
+		if (appName.toLowerCase() == "watchlist") {
+			retailerSettings = await page.evaluate(() => {
+				if (typeof window._swat.retailerSettings.Watchlist != "undefined") {
+					return window._swat.retailerSettings.Watchlist;
+				}
+			});
+		} else if (appName.toLowerCase() == "wishlist") {
+			retailerSettings = await page.evaluate(() => {
+				if (typeof window._swat.retailerSettings.Wishlist != "undefined") {
+					return window._swat.retailerSettings.Wishlist;
+				}
+			});
+		}
+	} catch (e) {
+		logger.logToConsole({
+			message: "RetailerSettings is Undefined! / Probably swymSnippet is not running/ page not fully loaded",
+			info: retailerSettings,
+		}, "log");
+	}
+	return retailerSettings;
+}
+// https://stackoverflow.com/questions/52497252/puppeteer-wait-until-page-is-completely-loaded
+const waitTillHTMLRendered = async (page, timeout = 30000) => {
+	const checkDurationMsecs = 1000;
+	const maxChecks = timeout / checkDurationMsecs;
+	let lastHTMLSize = 0;
+	let checkCounts = 1;
+	let countStableSizeIterations = 0;
+	const minStableSizeIterations = 3;
+	while (checkCounts++ <= maxChecks) {
+		let html = await page.content();
+		let currentHTMLSize = html.length;
+		let bodyHTMLSize = await page.evaluate(
+			() => document.body.innerHTML.length);
+		console.log("last: ", lastHTMLSize, " <> curr: ", currentHTMLSize, " body html size: ", bodyHTMLSize);
+		if (lastHTMLSize != 0 && currentHTMLSize == lastHTMLSize) countStableSizeIterations++;
+		else countStableSizeIterations = 0; //reset the counter
+		if (countStableSizeIterations >= minStableSizeIterations) {
+			console.log("Page rendered complete..");
+			break;
+		}
+		lastHTMLSize = currentHTMLSize;
+		await helper.delay(checkDurationMsecs);
+	}
+};
 // End of Helper Functions
-// Start Swym Specific Functions
-async function getOOSURL(url, appName) {
-	//https://k5-optima-store.myshopify.com/apps/swym+"appName"/proxy/product.php?oos=true
-	let endPoint = "";
-	if (appName && appName.toLowerCase() == "wishlist") {
-		endpoint = url + "/apps/swymWishlist/proxy/product.php?oos=true"
-	} else if (appName && appName.toLowerCase() == "watchlist") {
-		endPoint = url + "/apps/swymWatchlist/proxy/product.php?oos=true";
-	}
-	return endpoint;
-}
+// Start App Specific Functions
 async function validateShopifyStore(page, invalidStoreSelector) {
 	let elements = {};
 	try {
@@ -79,24 +127,6 @@ async function getSwymPageDataInternal(page) {
 	}
 	return product;
 }
-async function checkIfSwymInstalled(page) {
-	let _swatPresent = false;
-	try {
-		_swatPresent = await page.evaluate(() => {
-			return typeof window._swat == "undefined" ? false : true;
-		});
-		logger.logToConsole({
-			message: "Is Swym Installed ? ",
-			info: _swatPresent,
-		}, "log");
-	} catch (e) {
-		logger.logToConsole({
-			message: "Error, while checking if swym was installed!",
-			error: e,
-		}, "error");
-	}
-	return _swatPresent;
-}
 async function validateSwymInventory(page) {
 	let result = [];
 	let swymWatchProducts;
@@ -133,28 +163,29 @@ async function getSwymWatchProductsInternal(page) {
 	}
 	return swymWatchProducts;
 }
-
 async function checkSwymVariables(url, page, appName) {
 	let swymObj = {};
 	try {
-		let content = await waitTillHTMLRendered(page);
-		await delay(1000);
-		let is_swat = await checkIfSwymInstalled(page);
-		swymObj.swatPresent = is_swat;
-    swymObj.installedApps = await getInstalledAppsFromCache(page);
-		if (is_swat) {
-			let swymOOSURL = await getOOSURL(url, appName);
+		await waitTillHTMLRendered(page);
+		await helper.delay(1000);
+		swymObj.swatPresent = await checkIfSwymInstalled(page);
+		swymObj.appCache = await getInstalledAppsFromCache(page);
+		if (swymObj.swatPresent) {
+			let swymOOSURL = await helper.getOOSURL(url, appName);
 			console.log(swymOOSURL, "OOS URL ");
 			await browserContext.navigateTo(swymOOSURL, page);
 			swymObj.OOS_URL = page.url();
 			swymObj.validSwymPageData = await validateSwymPageData(page);
-			await delay(1000);
+			await helper.delay(1000);
 			swymObj.retailerSettings = await getRetailerSettings(page, appName);
 			if (appName.toLowerCase() == "watchlist") {
 				swymObj.isInventoryManagementValid = await validateSwymInventory(page);
 			} else {
 				swymObj.isInventoryManagementValid = "N/A";
 			}
+		} else {
+			// Validation failed for App name and _swat we return an empty object
+			return {};
 		}
 	} catch (e) {
 		logger.logToConsole({
@@ -176,68 +207,18 @@ async function getRetailerSettings(page, appName) {
 	}
 	return appSettings;
 }
-async function getSwymRetailerSettingsInternal(page, appName) {
-	let retailerSettings = {};
-	await delay(1000);
-	try {
-		if (appName.toLowerCase() == "watchlist") {
-			retailerSettings = await page.evaluate(() => {
-				if (typeof window._swat.retailerSettings.Watchlist != "undefined") {
-					return window._swat.retailerSettings.Watchlist;
-				}
-			});
-		} else if (appName.toLowerCase() == "wishlist") {
-			retailerSettings = await page.evaluate(() => {
-				if (typeof window._swat.retailerSettings.Wishlist != "undefined") {
-					return window._swat.retailerSettings.Wishlist;
-				}
-			});
-		}
-	} catch (e) {
-		logger.logToConsole({
-			message: "RetailerSettings is Undefined! / Probably swymSnippet is not running/ page not fully loaded",
-			info: retailerSettings,
-		}, "log");
-	}
-	return retailerSettings;
-}
-// https://stackoverflow.com/questions/52497252/puppeteer-wait-until-page-is-completely-loaded
-const waitTillHTMLRendered = async (page, timeout = 30000) => {
-	const checkDurationMsecs = 1000;
-	const maxChecks = timeout / checkDurationMsecs;
-	let lastHTMLSize = 0;
-	let checkCounts = 1;
-	let countStableSizeIterations = 0;
-	const minStableSizeIterations = 3;
-	while (checkCounts++ <= maxChecks) {
-		let html = await page.content();
-		let currentHTMLSize = html.length;
-		let bodyHTMLSize = await page.evaluate(
-			() => document.body.innerHTML.length);
-		console.log("last: ", lastHTMLSize, " <> curr: ", currentHTMLSize, " body html size: ", bodyHTMLSize);
-		if (lastHTMLSize != 0 && currentHTMLSize == lastHTMLSize) countStableSizeIterations++;
-		else countStableSizeIterations = 0; //reset the counter
-		if (countStableSizeIterations >= minStableSizeIterations) {
-			console.log("Page rendered complete..");
-			break;
-		}
-		lastHTMLSize = currentHTMLSize;
-		await delay(checkDurationMsecs);
-	}
-};
 async function getAppSpecificRetailerSettings(retailerSettings, appName) {
 	let appSpecificRetailerSettings = {};
 	try {
 		appSpecificRetailerSettings.Enabled = retailerSettings.Enabled;
 		appSpecificRetailerSettings.ToggleSwitchState = retailerSettings.ToggleSwitchState;
-		if (appName.toLowerCase() == "watchlist") {
+		if (appName == "Watchlist") {
 			appSpecificRetailerSettings.InlineForm = retailerSettings.InlineForm;
 			appSpecificRetailerSettings.ShowIfOneOOS = retailerSettings.ShowIfOneOOS;
 		}
-		if (appName.toLowerCase() == "wishlist") {
+		if (appName == "Wishlist") {
 			appSpecificRetailerSettings.UseCustomButton = retailerSettings.UseCustomButton;
-      appSpecificRetailerSettings.AttachButtonSelector = retailerSettings.AttachButtonSelector;
-
+			appSpecificRetailerSettings.AttachButtonSelector = retailerSettings.AttachButtonSelector;
 		}
 	} catch (e) {
 		logger.logToConsole({
@@ -247,12 +228,29 @@ async function getAppSpecificRetailerSettings(retailerSettings, appName) {
 	}
 	return appSpecificRetailerSettings;
 }
-/*Todo 
-1. Check the retailerSettings for form setup (Button / form)
-2. Check if the form or button is visible
-3. if the flow is a button - Click the button and click the form
-4. if the flow is a form - click on the input from and subscribe to pop-up, wait and check if the 
-*/
+// Checks if the input apps column was rightly specified the installed apps.\
+async function compareInputWithAppsCache(page, appName) {
+	let isAppInstalled = false;
+	try {
+		isAppInstalled = await page.evaluate((appName) => {
+			if (typeof window._swat.getApp == "function") {
+				if (appName == "Watchlist") {
+					return !Object.is(_swat.getApp("Watchlist"), null);
+				} else if (appName == "Wishlist") {
+					return !Object.is(_swat.getApp("Wishlist"), null);
+				}
+				return false;
+			}
+		});
+		console.log("Is the Specified App Installed", isAppInstalled, "App Name", appName);
+	} catch (e) {
+		logger.logToConsole({
+			message: "Error while comparing input to store apps",
+			info: e
+		}, "log");
+	}
+	return isAppInstalled;
+}
 async function runUIValidations(page, retailerSettings, appName) {
 	let validUI = false;
 	if (appName.toLowerCase() == "watchlist") {
@@ -263,7 +261,7 @@ async function runUIValidations(page, retailerSettings, appName) {
 	return validUI;
 }
 async function getPID(page) {
-	let pid = "";
+	let pid = false;
 	try {
 		pid = await page.evaluate(() => {
 			if (typeof window._swat.pid != "undefined") {
@@ -279,12 +277,11 @@ async function getPID(page) {
 	}
 	return pid;
 }
-
 async function getInstalledAppsFromCache(page) {
 	let appsCache = [];
 	try {
 		appsCache = await page.evaluate(() => {
-			if (typeof window._swat.appsCache != "undefined" ) {
+			if (typeof window._swat.appsCache != "undefined") {
 				return window._swat.appsCache;
 			}
 		});
@@ -298,14 +295,11 @@ async function getInstalledAppsFromCache(page) {
 	return appsCache;
 }
 module.exports = {
-	delay,
-	getOOSURL,
 	validateSwymPageData,
 	validateShopifyStore,
 	checkSwymVariables,
 	getRetailerSettings,
 	getAppSpecificRetailerSettings,
 	runUIValidations,
-	isEmpty,
 	getPID
 };

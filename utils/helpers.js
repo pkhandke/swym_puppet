@@ -26,10 +26,6 @@ async function asyncForEach(array, callback) {
     }
 }
 
-function invalidateStoreForMigrationProcess(processResultObject, appName) {
-
-    return processResultObject;
-}
 /* End of Helper Function */
 module.exports = {
     delay,

@@ -43,26 +43,28 @@ function readRecordsInternal(path, callback) {
 }
 async function getInputStoreUrlsFromCSV(filePath) {
 	let rows = [];
-  if(filePath.length <= 0){console.log("invalid file path", filePath); return;}
+	if (filePath.length <= 0) {
+		console.log("invalid file path", filePath);
+		return;
+	}
 	const records = await getRecords(filePath);
-	if (records ) {
+	if (records) {
 		rows = records.filter((row) => {
 			return row.processed == "false";
 		});
-    if(rows.length){
-      logger.logToConsole({
-        message: "Successfully, retrieved rows for processing",
-        info: rows,
-      }, "log");
-    } else{
-      console.log("No Rows to process - check processed flag?", rows );
-    }
-	}else{
-    console.log("No Rows to process - Check if valid input??", rows );
-  }
+		if (rows.length) {
+			logger.logToConsole({
+				message: "Successfully, retrieved rows for processing",
+				info: rows,
+			}, "log");
+		} else {
+			console.log("No Rows to process - check processed flag?", rows);
+		}
+	} else {
+		console.log("No Rows to process - Check if valid input??", rows);
+	}
 	return rows;
 }
-
 module.exports = {
 	writeRecords,
 	getInputStoreUrlsFromCSV,

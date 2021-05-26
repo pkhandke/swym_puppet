@@ -19,27 +19,26 @@ function logToConsole(meta, type) {
 }
 
 function writeDebugLogToFile(log) {
-  let { store_url, message, logType, value } = log;
-  let headers = [
-    {
-      id: "store_url",
-      title: "URL",
-    },
-    {
-      id: "message",
-      title: "message",
-    },
-    {
-      id: "type",
-      title: "Log Type",
-    },
-    {
-      id: "status",
-      title: "Status",
-    },
-  ];
+  let {
+    store_url,
+    message,
+    logType,
+    value
+  } = log;
+  let headers = [{
+    id: "store_url",
+    title: "URL",
+  }, {
+    id: "message",
+    title: "message",
+  }, {
+    id: "type",
+    title: "Log Type",
+  }, {
+    id: "status",
+    title: "Status",
+  }, ];
 }
-
 module.exports = {
   writeDebugLogToFile,
   logToConsole,

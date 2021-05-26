@@ -1,4 +1,6 @@
 const configuration = require("../swym_config/puppet_config.js").getConfig();
+const logger = require("./logger.js");
+const helper = require('./helpers.js')
 
 async function runBispaUIValidations(page, watchListSettings, appName){
     let isValidUI = false;
@@ -60,13 +62,13 @@ async function validateBISPAUI(page, type) {
         (await waitElementVisble(page, buttonSelector))
           ? await page.click(buttonSelector)
           : (validBISPAUI = false);
-        await delay(1500);
+        await helper.delay(1500);
       }
       let formElement = await waitElementVisble(page, formSelector);
       if (formElement) {
         if (configuration.watchlistUISettings.testSubscribe) {
           await page.type(inputSelector, userEmail);
-          await delay(2000);
+          await helper.helper.delay(2000);
           await page.click(submitBtn);
           validBISPAUI = await waitElementVisble(page, successSelector);
         } else {
