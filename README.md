@@ -1,7 +1,6 @@
 # Introduction
 
 The Swym Puppet Runs Validations Based on the documentation here.
-Currently only works for BISPA - However we will scale it to wishlist.
 https://docs.google.com/document/d/1-VfdIkUEn43TtL5f4NriQGtgIbtdnMVFNKY4FhbGepE
 
 # Setup Steps.
@@ -28,7 +27,8 @@ File name  |  Purpose
 ------------ | -------------
 swym_config.js | contains browser / puppet configuration
 index.js | Init file for the bot.
-utils | required files for bot to run.
+utils.js | required files for bot to run.
+helper.js | Contains helper functions used by the bot
 shopify_stores.csv | input file.
 results.csv | output file.
 
