@@ -1,9 +1,10 @@
 const browserContext = require("./utils/browser.js");
-const helper = require("./utils/helpers.js");
-const swymPuppet = require("./utils/swymPuppet.js");
 const fileOperations = require("./utils/fileOperations.js");
 const configuration = require("./swym_config/puppet_config.js").getConfig();
 const logger = require("./utils/logger.js");
+const helper = require("./utils/helpers.js");
+const swymPuppet = require("./utils/swymPuppet.js");
+
 var statusRecords = [];
 async function initSwymPuppet() {
 	const rows = await fileOperations.getInputStoreUrlsFromCSV(

@@ -253,9 +253,9 @@ async function compareInputWithAppsCache(page, appName) {
 }
 async function runUIValidations(page, retailerSettings, appName) {
 	let validUI = false;
-	if (appName.toLowerCase() == "watchlist") {
+	if (appName == "Watchlist") {
 		validUI = uiValidator.runBispaUIValidations(page, retailerSettings, appName);
-	} else if (appName.toLowerCase() == 'wishlist') {
+	} else if (appName == 'Wishlist') {
 		validUI = uiValidator.runWishlistUIValidations(page, retailerSettings, appName);
 	}
 	return validUI;
